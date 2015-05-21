@@ -8,10 +8,18 @@
 
 #import <UIKit/UIKit.h>
 
+
+#define AppDel ((AppDelegate *)[UIApplication sharedApplication].delegate)
+
+
+extern NSString *const TreeNodeTitleKey;
+extern NSString *const TreeNodeChildrenKey;
+
+
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
-
+@property (nonatomic) NSArray *treeNodes;
 
 @end
 

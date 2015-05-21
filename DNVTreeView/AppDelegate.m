@@ -7,16 +7,36 @@
 //
 
 #import "AppDelegate.h"
+#import "DNVTreeViewController.h"
+
+
+NSString *const TreeNodeTitleKey = @"title";
+NSString *const TreeNodeChildrenKey = @"children";
+
 
 @interface AppDelegate ()
 
 @end
 
+
 @implementation AppDelegate
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    
+    self.treeNodes = @[
+        @{TreeNodeTitleKey: @"1", TreeNodeChildrenKey: @[
+            @{TreeNodeTitleKey: @"1.1"},
+            @{TreeNodeTitleKey: @"1.2"}
+        ]},
+        @{TreeNodeTitleKey: @"2"},
+        @{TreeNodeTitleKey: @"3"}
+    ];
+    
+    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    self.window.rootViewController = [DNVTreeViewController new];
+    [self.window makeKeyAndVisible];
+    
     return YES;
 }
 
