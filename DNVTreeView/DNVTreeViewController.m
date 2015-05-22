@@ -23,6 +23,7 @@
         self.treeView = [DNVTreeView new];
         self.treeView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.treeView.dataSource = self;
+        self.treeView.delegate = self;
         self.view = self.treeView;
     }
     return self;
@@ -44,18 +45,18 @@
 
 #pragma mark - DNVTreeViewDataSource
 
-- (NSInteger)treeView:(DNVTreeView *)treeView numberOfRowsInNodeAtIndexPath:(NSIndexPath *)indexPath {
+- (NSInteger)treeView:(DNVTreeView *)treeView numberOfChildNodesAtIndexPath:(NSIndexPath *)indexPath {
     
     if (!indexPath.length) return AppDel.treeNodes.count;
     
     NSDictionary *node = [DNVTreeViewController nodeAtIndexPath:indexPath];
-    NSArray *nodes = node[TreeNodeChildrenKey];
+    NSArray *childNodes = node[TreeNodeChildrenKey];
     
-    return nodes.count;
+    return childNodes.count;
 }
 
 
-- (UITableViewCell *)treeView:(DNVTreeView *)treeView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (UITableViewCell *)treeView:(DNVTreeView *)treeView cellForNodeAtIndexPath:(NSIndexPath *)indexPath {
     
     NSDictionary *node = [DNVTreeViewController nodeAtIndexPath:indexPath];
     
@@ -63,6 +64,35 @@
     cell.textLabel.text = node[TreeNodeTitleKey];
     
     return cell;
+}
+
+
+#pragma mark - DNVTreeViewDelegate
+
+- (void)treeView:(DNVTreeView *)treeView didSelectNodeAtIndexPath:(NSIndexPath *)indexPath {
+    
+    [treeView deselectNodeAtIndexPath:indexPath animated:YES];
+}
+
+
+- (BOOL)treeView:(DNVTreeView *)treeView isNodeExpandedAtIndexPath:(NSIndexPath *)indexPath {
+    
+    NSDictionary *node = [DNVTreeViewController nodeAtIndexPath:indexPath];
+    return [node[TreeNodeIsExpandedKey] boolValue];
+}
+
+
+- (void)treeView:(DNVTreeView *)treeView willExpandNodeAtIndexPath:(NSIndexPath *)indexPath {
+    
+    NSMutableDictionary *node = [DNVTreeViewController nodeAtIndexPath:indexPath];
+    node[TreeNodeIsExpandedKey] = @YES;
+}
+
+
+- (void)treeView:(DNVTreeView *)treeView willCollapseNodeAtIndexPath:(NSIndexPath *)indexPath {
+    
+    NSMutableDictionary *node = [DNVTreeViewController nodeAtIndexPath:indexPath];
+    node[TreeNodeIsExpandedKey] = @NO;
 }
 
 @end

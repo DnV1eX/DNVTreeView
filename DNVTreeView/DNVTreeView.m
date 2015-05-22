@@ -12,6 +12,7 @@
 @interface DNVTreeView () <UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, weak) id<DNVTreeViewDataSource> treeViewDataSource;
+@property (nonatomic, weak) id<DNVTreeViewDelegate> treeViewDelegate;
 
 @end
 
@@ -19,6 +20,7 @@
 @implementation DNVTreeView
 
 @dynamic dataSource;
+@dynamic delegate;
 
 
 - (void)setDataSource:(id<DNVTreeViewDataSource>)dataSource {
@@ -27,8 +29,14 @@
 }
 
 
+- (void)setDelegate:(id<DNVTreeViewDelegate>)delegate {
+    
+    self.treeViewDelegate = delegate;
+}
+
+
 - (instancetype)init {
-    self = [super init];
+    self = [super initWithFrame:CGRectZero style:UITableViewStyleGrouped];
     if (self) {
         super.dataSource = self;
         super.delegate = self;
@@ -36,31 +44,20 @@
     return self;
 }
 
-/*
-- (NSIndexPath *)nodeIndexPathForRow:(NSUInteger)row {
-    
-}
 
-
-- (NSInteger)numberOfRowsInNodeAtIndexPath:(NSIndexPath *)indexPath {
+- (NSArray *)indexPathsForChildNodesAtIndexPath:(NSIndexPath *)indexPath {
     
-    NSInteger numberOfNodes = [self.dataSource numberOfRowsInNodeAtIndexPath:indexPath];
-    NSInteger numberOfChildren = 0;
-    for (NSUInteger index = 0; index < numberOfNodes; index++) {
-        numberOfChildren += [self.dataSource numberOfRowsInNodeAtIndexPath:[indexPath indexPathByAddingIndex:index]];
+    BOOL showChildNodes = YES;
+    if (indexPath.length) {
+        showChildNodes = [self.treeViewDelegate treeView:self isNodeExpandedAtIndexPath:indexPath];
     }
-    return numberOfNodes + numberOfChildren;
-}
-*/
-
-- (NSArray *)indexPathsForRowsInNodeAtIndexPath:(NSIndexPath *)indexPath {
     
-    NSInteger numberOfNodes = [self.treeViewDataSource treeView:self numberOfRowsInNodeAtIndexPath:indexPath];
+    NSInteger numberOfNodes = showChildNodes ? [self.treeViewDataSource treeView:self numberOfChildNodesAtIndexPath:indexPath] : 0;
     NSMutableArray *indexPaths = [NSMutableArray new];
     for (NSUInteger index = 0; index < numberOfNodes; index++) {
         NSIndexPath *nodeIndexPath = [indexPath indexPathByAddingIndex:index];
         [indexPaths addObject:nodeIndexPath];
-        [indexPaths addObjectsFromArray:[self indexPathsForRowsInNodeAtIndexPath:nodeIndexPath]];
+        [indexPaths addObjectsFromArray:[self indexPathsForChildNodesAtIndexPath:nodeIndexPath]];
     }
     return [indexPaths copy];
 }
@@ -68,7 +65,56 @@
 
 - (NSArray *)indexPaths {
     
-    return [self indexPathsForRowsInNodeAtIndexPath:[NSIndexPath new]];
+    return [self indexPathsForChildNodesAtIndexPath:[NSIndexPath new]];
+}
+
+
+#pragma mark - Public Methods
+
+- (void)deselectNodeAtIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated {
+    
+    NSInteger row = [[self indexPaths] indexOfObject:indexPath];
+    [self deselectRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:0] animated:animated];
+}
+
+
+- (void)expandNodeAtIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated {
+    
+    [self beginUpdates];
+    
+    if ([self.treeViewDelegate respondsToSelector:@selector(treeView:willExpandNodeAtIndexPath:)]) {
+        [self.treeViewDelegate treeView:self willExpandNodeAtIndexPath:indexPath];
+    }
+    
+    UITableViewRowAnimation animation = animated ? UITableViewRowAnimationBottom : UITableViewRowAnimationNone;
+    NSMutableArray *indexPaths = [NSMutableArray new];
+    for (NSIndexPath *nodeIndexPath in [self indexPathsForChildNodesAtIndexPath:indexPath]) {
+        NSInteger row = [[self indexPaths] indexOfObject:nodeIndexPath];
+        [indexPaths addObject:[NSIndexPath indexPathForRow:row inSection:0]];
+    }
+    [self insertRowsAtIndexPaths:indexPaths withRowAnimation:animation];
+    
+    [self endUpdates];
+}
+
+
+- (void)collapseNodeAtIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated {
+    
+    [self beginUpdates];
+    
+    UITableViewRowAnimation animation = animated ? UITableViewRowAnimationTop : UITableViewRowAnimationNone;
+    NSMutableArray *indexPaths = [NSMutableArray new];
+    for (NSIndexPath *nodeIndexPath in [self indexPathsForChildNodesAtIndexPath:indexPath]) {
+        NSInteger row = [[self indexPaths] indexOfObject:nodeIndexPath];
+        [indexPaths addObject:[NSIndexPath indexPathForRow:row inSection:0]];
+    }
+    [self deleteRowsAtIndexPaths:indexPaths withRowAnimation:animation];
+    
+    if ([self.treeViewDelegate respondsToSelector:@selector(treeView:willCollapseNodeAtIndexPath:)]) {
+        [self.treeViewDelegate treeView:self willCollapseNodeAtIndexPath:indexPath];
+    }
+    
+    [self endUpdates];
 }
 
 
@@ -85,8 +131,24 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     NSIndexPath *nodeIndexPath = [self indexPaths][indexPath.row];
-    UITableViewCell *cell = [self.treeViewDataSource treeView:self cellForRowAtIndexPath:nodeIndexPath];
+    UITableViewCell *cell = [self.treeViewDataSource treeView:self cellForNodeAtIndexPath:nodeIndexPath];
+    cell.layoutMargins = UIEdgeInsetsMake(cell.layoutMargins.top, cell.layoutMargins.left + 10 * nodeIndexPath.length, cell.layoutMargins.bottom, cell.layoutMargins.right);
     return cell;
+}
+
+
+#pragma mark - UITableViewDelegate
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    NSIndexPath *nodeIndexPath = [self indexPaths][indexPath.row];
+    [self.treeViewDelegate treeView:self didSelectNodeAtIndexPath:nodeIndexPath];
+    
+    if ([self.treeViewDelegate treeView:self isNodeExpandedAtIndexPath:nodeIndexPath]) {
+        [self collapseNodeAtIndexPath:nodeIndexPath animated:YES];
+    } else {
+        [self expandNodeAtIndexPath:nodeIndexPath animated:YES];
+    }
 }
 
 @end

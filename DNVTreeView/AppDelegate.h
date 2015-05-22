@@ -14,6 +14,7 @@
 
 extern NSString *const TreeNodeTitleKey;
 extern NSString *const TreeNodeChildrenKey;
+extern NSString *const TreeNodeIsExpandedKey;
 
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>

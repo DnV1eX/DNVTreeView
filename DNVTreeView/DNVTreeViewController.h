@@ -10,7 +10,7 @@
 #import "DNVTreeView.h"
 
 
-@interface DNVTreeViewController : UIViewController <DNVTreeViewDataSource>
+@interface DNVTreeViewController : UIViewController <DNVTreeViewDataSource, DNVTreeViewDelegate>
 
 @property (nonatomic) DNVTreeView *treeView;
 

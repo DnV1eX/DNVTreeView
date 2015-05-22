@@ -12,6 +12,7 @@
 
 NSString *const TreeNodeTitleKey = @"title";
 NSString *const TreeNodeChildrenKey = @"children";
+NSString *const TreeNodeIsExpandedKey = @"isExpanded";
 
 
 @interface AppDelegate ()
@@ -25,12 +26,15 @@ NSString *const TreeNodeChildrenKey = @"children";
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     self.treeNodes = @[
-        @{TreeNodeTitleKey: @"1", TreeNodeChildrenKey: @[
-            @{TreeNodeTitleKey: @"1.1"},
-            @{TreeNodeTitleKey: @"1.2"}
-        ]},
-        @{TreeNodeTitleKey: @"2"},
-        @{TreeNodeTitleKey: @"3"}
+        [@{TreeNodeTitleKey: @"1", TreeNodeChildrenKey: @[
+            [@{TreeNodeTitleKey: @"1.1"} mutableCopy],
+            [@{TreeNodeTitleKey: @"1.2", TreeNodeChildrenKey: @[
+                [@{TreeNodeTitleKey: @"1.2.1"} mutableCopy]
+            ]} mutableCopy],
+            [@{TreeNodeTitleKey: @"1.3"} mutableCopy]
+        ]} mutableCopy],
+        [@{TreeNodeTitleKey: @"2"} mutableCopy],
+        [@{TreeNodeTitleKey: @"3"} mutableCopy]
     ];
     
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
