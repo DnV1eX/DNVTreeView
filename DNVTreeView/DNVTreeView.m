@@ -86,15 +86,27 @@
         [self.treeViewDelegate treeView:self willExpandNodeAtIndexPath:indexPath];
     }
     
-    UITableViewRowAnimation animation = animated ? UITableViewRowAnimationBottom : UITableViewRowAnimationNone;
     NSMutableArray *indexPaths = [NSMutableArray new];
+    NSArray *allIndexPaths = [self indexPaths];
+    NSInteger row = [allIndexPaths indexOfObject:indexPath];
+    NSIndexPath *rowIndexPath = [NSIndexPath indexPathForRow:row inSection:0];
+    CGFloat height = [self tableView:self heightForRowAtIndexPath:rowIndexPath];
     for (NSIndexPath *nodeIndexPath in [self indexPathsForChildNodesAtIndexPath:indexPath]) {
-        NSInteger row = [[self indexPaths] indexOfObject:nodeIndexPath];
-        [indexPaths addObject:[NSIndexPath indexPathForRow:row inSection:0]];
+        NSInteger row = [allIndexPaths indexOfObject:nodeIndexPath];
+        NSIndexPath *rowIndexPath = [NSIndexPath indexPathForRow:row inSection:0];
+        [indexPaths addObject:rowIndexPath];
+        height += [self tableView:self heightForRowAtIndexPath:rowIndexPath];
     }
+    UITableViewRowAnimation animation = animated ? UITableViewRowAnimationBottom : UITableViewRowAnimationNone;
     [self insertRowsAtIndexPaths:indexPaths withRowAnimation:animation];
     
     [self endUpdates];
+    
+    if (height < self.bounds.size.height) {
+        [self scrollToRowAtIndexPath:indexPaths.lastObject atScrollPosition:UITableViewScrollPositionNone animated:animated];
+    } else {
+        [self scrollToRowAtIndexPath:rowIndexPath atScrollPosition:UITableViewScrollPositionTop animated:animated];
+    }
 }
 
 
@@ -102,12 +114,14 @@
     
     [self beginUpdates];
     
-    UITableViewRowAnimation animation = animated ? UITableViewRowAnimationTop : UITableViewRowAnimationNone;
     NSMutableArray *indexPaths = [NSMutableArray new];
+    NSArray *allIndexPaths = [self indexPaths];
     for (NSIndexPath *nodeIndexPath in [self indexPathsForChildNodesAtIndexPath:indexPath]) {
-        NSInteger row = [[self indexPaths] indexOfObject:nodeIndexPath];
-        [indexPaths addObject:[NSIndexPath indexPathForRow:row inSection:0]];
+        NSInteger row = [allIndexPaths indexOfObject:nodeIndexPath];
+        NSIndexPath *rowIndexPath = [NSIndexPath indexPathForRow:row inSection:0];
+        [indexPaths addObject:rowIndexPath];
     }
+    UITableViewRowAnimation animation = animated ? UITableViewRowAnimationTop : UITableViewRowAnimationNone;
     [self deleteRowsAtIndexPaths:indexPaths withRowAnimation:animation];
     
     if ([self.treeViewDelegate respondsToSelector:@selector(treeView:willCollapseNodeAtIndexPath:)]) {
@@ -148,6 +162,17 @@
         [self collapseNodeAtIndexPath:nodeIndexPath animated:YES];
     } else {
         [self expandNodeAtIndexPath:nodeIndexPath animated:YES];
+    }
+}
+
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    if ([self.treeViewDelegate respondsToSelector:@selector(treeView:heightForNodeAtIndexPath:)]) {
+        NSIndexPath *nodeIndexPath = [self indexPaths][indexPath.row];
+        return [self.treeViewDelegate treeView:self heightForNodeAtIndexPath:nodeIndexPath];
+    } else {
+        return (self.rowHeight >= 0) ? self.rowHeight : 44;
     }
 }
 

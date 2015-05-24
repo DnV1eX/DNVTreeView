@@ -28,6 +28,7 @@
 - (void)treeView:(DNVTreeView *)treeView didSelectNodeAtIndexPath:(NSIndexPath *)indexPath;
 - (void)treeView:(DNVTreeView *)treeView willExpandNodeAtIndexPath:(NSIndexPath *)indexPath;
 - (void)treeView:(DNVTreeView *)treeView willCollapseNodeAtIndexPath:(NSIndexPath *)indexPath;
+- (CGFloat)treeView:(DNVTreeView *)treeView heightForNodeAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 
