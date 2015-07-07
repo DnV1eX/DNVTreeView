@@ -30,10 +30,10 @@
 }
 
 
-+ (NSDictionary *)nodeAtIndexPath:(NSIndexPath *)indexPath {
++ (NSMutableDictionary *)nodeAtIndexPath:(NSIndexPath *)indexPath {
     
     NSArray *nodes = AppDel.treeNodes;
-    NSDictionary *node;
+    NSMutableDictionary *node;
     for (NSUInteger position = 0; position < indexPath.length; position++) {
         NSUInteger index = [indexPath indexAtPosition:position];
         node = nodes[index];

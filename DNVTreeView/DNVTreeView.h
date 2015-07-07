@@ -35,8 +35,11 @@
 
 @interface DNVTreeView : UITableView
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wincompatible-property-type"
 @property (nonatomic, weak) id<DNVTreeViewDataSource> dataSource;
 @property (nonatomic, weak) id<DNVTreeViewDelegate> delegate;
+#pragma clang diagnostic pop
 
 - (void)deselectNodeAtIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated;
 - (void)expandNodeAtIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated;

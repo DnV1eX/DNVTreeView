@@ -147,6 +147,7 @@
     NSIndexPath *nodeIndexPath = [self indexPaths][indexPath.row];
     UITableViewCell *cell = [self.treeViewDataSource treeView:self cellForNodeAtIndexPath:nodeIndexPath];
     cell.layoutMargins = UIEdgeInsetsMake(cell.layoutMargins.top, cell.layoutMargins.left + 10 * nodeIndexPath.length, cell.layoutMargins.bottom, cell.layoutMargins.right);
+    
     return cell;
 }
 
